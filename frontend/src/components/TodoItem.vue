@@ -1,3 +1,27 @@
+<script setup>
+import { ref, watch } from "vue"
+
+const props = defineProps({
+  todo: Object
+})
+
+const emit = defineEmits(["toggle", "remove", "edit"])
+
+const editing = ref(false)
+const newText = ref(props.todo.text)
+
+watch(() => props.todo.text, v => newText.value = v)
+
+function startEdit() {
+  editing.value = true
+}
+
+function saveEdit() {
+  emit("edit", props.todo.id, newText.value)
+  editing.value = false
+}
+</script>
+
 <template>
   <li>
     <input
@@ -6,19 +30,19 @@
       @change="$emit('toggle', todo.id)"
     />
 
-    <span :class="{ done: todo.done }">
-      {{ todo.text }}
-    </span>
+    <span v-if="!editing">{{ todo.text }}</span>
 
-    <button @click="$emit('remove', todo.id)">✕</button>
+    <input
+      v-else
+      v-model="newText"
+    />
+
+    <button v-if="!editing" @click="startEdit">Edit</button>
+    <button v-else @click="saveEdit">Save</button>
+
+    <button @click="$emit('remove', todo.id)">Delete</button>
   </li>
 </template>
-
-<script setup>
-defineProps({
-  todo: Object,
-});
-</script>
 
 <style scoped>
 li {
